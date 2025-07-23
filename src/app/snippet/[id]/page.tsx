@@ -1,38 +1,32 @@
-import { deleteSnippet } from "@/actions/saveSnippet";
-import { GoBackButton } from "@/components/GoBackClientSide";
+export const dynamicParams = true;
 import { prisma } from "@/lib/prisma";
 
-const SnippetDetailPage = async ({ params }: { params: { id: string } }) => {
-  const id = params.id;
+import NotFoundSnippet from "./not-found";
+import { GoBackButton } from "@/components/GoBackClientSide";
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = await params;
+  const id = parseInt(resolvedParams.id);
 
   const snippet = await prisma.snippet.findUnique({
-    where: {
-      id: Number(id),
-    },
+    where: { id },
   });
 
-  if (!snippet) {
-    return (
-      <h1 className="flex justify-center items-center text-3xl font-bold text-gray-800">
-        Snippet could not be found
-      </h1>
-    );
-  }
-
-  const handelSnippetDelete = deleteSnippet.bind(null,snippet.id);
+  if (!snippet) return <NotFoundSnippet />;
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4 text-blue-800">{snippet.title}</h1>
-      <pre className="bg-gray-100 p-4 rounded-md text-sm overflow-x-auto">
-        {snippet.code}
+    <div className="max-w-4xl mx-auto p-8">
+      <h1 className="text-4xl font-bold text-gray-900 mb-6 border-b pb-2">
+        {snippet.title}
+      </h1>
+      <pre className="bg-gray-900 text-white p-6 rounded-lg overflow-auto text-lg leading-relaxed">
+        <code>{snippet.code}</code>
       </pre>
-      <GoBackButton />
-      <form action={handelSnippetDelete}>
-        <button type="submit">Delete</button>
-      </form>
+      <GoBackButton/>
     </div>
   );
-};
-
-export default SnippetDetailPage;
+}

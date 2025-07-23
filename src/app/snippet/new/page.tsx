@@ -1,72 +1,62 @@
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import React from "react";
+"use client";
 
-const NewSnippet = () => {
-  const createSnippet = async (formData: FormData) => {
-    "use server";
-    const title = formData.get("title") as string;
-    const code = formData.get("code") as string;
+import { createSnippet } from "@/actions/saveSnippet";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
 
-    const snippet = await prisma.snippet.create({
-      data: {
-        title,
-        code,
-      },
-    });
-    console.log("New Snippet Page Loaded",snippet);  
-    redirect("/")
-    
-  };
-  
+const CreateSnippet = () => {
+  const router = useRouter();
+
+  const [state, formAction] = useActionState(createSnippet, { message: "" });
+  console.log(state)
+
+  useEffect(() => {
+    if (state.message === "Snippet Saved Successfully") {
+      router.push(`/`);
+    }
+  }, [state, router]);
 
   return (
-    <>
-      <h1 className="text-3xl font-bold flex justify-center items-center mt-10">
-        Create a New Snippet
-      </h1>
-      <form
-        action={createSnippet}
-        className="min-h-screen bg-gray-50 flex flex-col items-center px-4 py-10 sm:px-6 lg:px-8"
-      >
-        <div className="w-full max-w-3xl bg-white shadow rounded-lg p-5 sm:p-6 border border-gray-200 mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title
-          </label>
-          <input
-            type="text"
-            name="title"
-            required
-            placeholder="Enter the title for your snippet"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-          />
-        </div>
-
-        <div className="w-full max-w-3xl bg-white shadow rounded-lg p-5 sm:p-6 border border-gray-200">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Code
-          </label>
-          <textarea
-            rows={10}
-            name="code"
-            required
-            placeholder="Enter your code snippet here"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-          />
-        </div>
-
-        {/* Submit Button */}
-        <div className="w-full max-w-3xl mt-6 px-1 sm:px-0">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          Create a New Snippet
+        </h1>
+        <form action={formAction} className="flex flex-col space-y-4">
+          <div>
+            <label htmlFor="title" className="block font-medium mb-1">
+              Enter the title:
+            </label>
+            <input
+              type="text"
+              name="title"
+              id="title"
+              placeholder="e.g. React snippet..."
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="code" className="block font-medium mb-1">
+              Code:
+            </label>
+            <textarea
+              id="code"
+              name="code"
+              placeholder="Enter the code..."
+              rows={8}
+              className="w-full px-4 py-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <button
             type="submit"
-            className="w-full bg-gray-900 text-white py-2 rounded-md text-sm sm:text-lg font-medium hover:bg-gray-800 transition"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
           >
-            Submit Snippet
+            Create
           </button>
-        </div>
-      </form>
-    </>
+        </form>
+      </div>
+    </div>
   );
 };
 
-export default NewSnippet;
+export default CreateSnippet;
